@@ -8,7 +8,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.WebElement;
 
-import java.util.List;
+import java.util.Map;
 
 public class AuthenticationTest extends BaseTest {
     String emailValue = faker.internet().emailAddress();
@@ -21,7 +21,7 @@ public class AuthenticationTest extends BaseTest {
     }
 
     @Test
-    public void signUp() {
+    public void signUpUI() {
         driver.get(BASE_URL + "/sign_up");
 
         WebElement email = driver.findElement(By.id("user_email"));
@@ -37,6 +37,26 @@ public class AuthenticationTest extends BaseTest {
     }
 
     @Test
+    public void signUpAPI() {
+        driver.get(BASE_URL);
+        authAPI.createUser(emailValue, passwordValue);
+        Cookie authCookie = new Cookie("remember_token", authAPI.rememberToken);
+        driver.manage().addCookie(authCookie);
+        driver.navigate().refresh();
+
+        // UI Assertions
+        WebElement currentUser = driver.findElement(By.cssSelector("[data-test=current-user]"));
+        String actualEmail = currentUser.getText();
+        Assertions.assertEquals(emailValue, actualEmail);
+
+        // API Assertions
+        Cookie rememberTokenCookie = driver.manage().getCookieNamed("remember_token");
+        Assertions.assertNotNull(rememberTokenCookie);
+        Map<String, Object> user = authAPI.getUser(rememberTokenCookie.getValue());
+        Assertions.assertEquals(emailValue, user.get("email"));
+    }
+
+    @Test
     public void logOut() {
         driver.get(BASE_URL);
         authAPI.createUser(emailValue, passwordValue);
@@ -48,12 +68,11 @@ public class AuthenticationTest extends BaseTest {
         WebElement signOut = driver.findElement(By.cssSelector("[data-test=sign-out]"));
         signOut.click();
 
-        List<WebElement> emailElements = driver.findElements(By.cssSelector("[data-test=current-user]"));
-        Assertions.assertEquals(0, emailElements.size());
+        Assertions.assertNull(driver.manage().getCookieNamed("remember_token"));
     }
 
     @Test
-    public void logIn() throws InterruptedException {
+    public void logIn() {
         driver.get(BASE_URL);
         authAPI.createUser(emailValue, passwordValue);
 
@@ -66,9 +85,6 @@ public class AuthenticationTest extends BaseTest {
         WebElement submitSignIn = driver.findElement(By.cssSelector("[data-test=submit]"));
         submitSignIn.click();
 
-        Thread.sleep(100);
-        WebElement currentUserSignIn = driver.findElement(By.cssSelector("[data-test=current-user]"));
-        String actualEmailSignIn = currentUserSignIn.getText();
-        Assertions.assertEquals(emailValue, actualEmailSignIn);
+        Assertions.assertNotNull(driver.manage().getCookieNamed("remember_token"));
     }
 }
