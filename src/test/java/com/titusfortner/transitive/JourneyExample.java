@@ -10,7 +10,7 @@ import org.openqa.selenium.support.ui.Select;
 
 import java.util.List;
 
-public class JourneyTest extends BaseTest {
+public class JourneyExample extends BaseTest {
     @Test
     public void userJourney() throws InterruptedException {
 //        Go to Demo Site

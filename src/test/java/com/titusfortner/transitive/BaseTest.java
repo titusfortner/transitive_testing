@@ -1,5 +1,6 @@
 package com.titusfortner.transitive;
 
+import net.datafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -22,6 +23,7 @@ public class BaseTest {
     WebDriver driver;
     boolean REMOTE = Boolean.parseBoolean(System.getProperty("REMOTE", "false"));
     String BASE_URL = System.getProperty("BASE_URL", "http://localhost:3000");
+    Faker faker = new Faker();
 
     @RegisterExtension
     public CustomTestWatcher customTestWatcher = new CustomTestWatcher();
